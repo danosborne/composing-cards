@@ -36,13 +36,13 @@ const CARDS = {
 // The cards have a limited range
 const MIDI_RANGE = ['A3','B3','C4','D4','E4','F4','G4','A4','B4','C5','D5','E5','F5','G5','A5','B5','C6','D6','E6','F6','G6'];
 
-const B5_INDEX = MIDI_RANGE.indexOf('B4'); // index 8
+const B4_INDEX = MIDI_RANGE.indexOf('B4'); // index 8
 
 // Flip vertically through B5 on the stave
 const flipPitch = (pitch) => {
   const index = MIDI_RANGE.indexOf(pitch); // D4 is 3 // G5 is 13
-  const diff = B5_INDEX - index; // D4 diff is 5 // G4 diff is -5
-  return MIDI_RANGE[B5_INDEX + diff];
+  const diff = B4_INDEX - index; // D4 diff is 5 // G4 diff is -5
+  return MIDI_RANGE[B4_INDEX + diff];
 };
 
 // Forward slash is optional in vexflow easy score, 
@@ -55,7 +55,7 @@ const flipPitch = (pitch) => {
 //   }
 // };
 
-const flipNotes = (seq) => seq
+const flipVertical = (seq) => seq
   .split(', ')
   .map((note) => {
     // Split, keep both (latter optional)
@@ -70,9 +70,9 @@ const flipNotes = (seq) => seq
   .join(', ');
 
 // Flip horizontally through beats 2-3
-const reverse = (seq) => seq.split(', ').reverse().join(', ');
+const flipHorizontal = (seq) => seq.split(', ').reverse().join(', ');
 
-const rotate = (seq) => flipNotes(reverse(seq));
+const rotate = (seq) => flipVertical(flipHorizontal(seq));
 
 const inc = (codeIntAsStr, incr) => `${parseInt(codeIntAsStr, 10) + incr}`.padStart(4, '0');
 
@@ -81,13 +81,13 @@ const ALL_CARDS = {};
 Object.keys(CARDS).forEach((cardCode) => {
   ALL_CARDS[cardCode] = CARDS[cardCode];
   ALL_CARDS[inc(cardCode, 1)] = rotate(CARDS[cardCode]),
-  ALL_CARDS[inc(cardCode, 2)] = reverse(CARDS[cardCode]),
-  ALL_CARDS[inc(cardCode, 3)] = flipNotes(CARDS[cardCode]);
+  ALL_CARDS[inc(cardCode, 2)] = flipHorizontal(CARDS[cardCode]),
+  ALL_CARDS[inc(cardCode, 3)] = flipVertical(CARDS[cardCode]);
   // console.log(cardCode, '->', {
   //   [cardCode]: CARDS[cardCode],
   //   [inc(cardCode, 1)]: rotate(CARDS[cardCode]),
-  //   [inc(cardCode, 2)]: reverse(CARDS[cardCode]),
-  //   [inc(cardCode, 3)]: flipNotes(CARDS[cardCode])
+  //   [inc(cardCode, 2)]: flipHorizontal(CARDS[cardCode]),
+  //   [inc(cardCode, 3)]: flipVertical(CARDS[cardCode])
   // });
 });
 
