@@ -1,0 +1,114 @@
+<style>
+.cards {
+  /* display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 150px; */
+}
+.card {
+  background: rgb(252, 243, 243);
+  border-radius: 10px;
+  margin: 10px;
+}
+.cardCode {
+  padding: 20px;
+}
+.play-button {
+  position: absolute;
+  right: 10px;
+  padding: 20px;
+  font-size: large;
+  border-radius: 10px;
+}
+
+</style>
+<div class='cards'>
+</div>
+<script src='vexflow-debug.js'></script>
+<script src='band.min.js'></script>
+<script src='index.js'></script>
+<script>
+
+// h, q, 8 -> half, quarter, eighth
+const VEXFLOW_TO_BAND_DURATION_MAP = {
+  'h': 'half',
+  'q': 'quarter',
+  '8': 'eighth'
+};
+const toBandDuration = (d) => VEXFLOW_TO_BAND_DURATION_MAP[d];
+const cards = window.compose_ys.ALL_CARDS;
+
+// TODO - see https://github.com/0xfe/vexflow/wiki/Tutorial
+// And use context to change / add what is drawn etc.
+// ^^ This for when we are drawing the main score composed
+//    of multiple cards
+const renderCard = (cardCode, elementId) => {
+  const phrase = cards[cardCode];
+  
+  const VF = Vex.Flow;
+
+  const vf = new VF.Factory({renderer: {elementId}});
+  const score = vf.EasyScore();
+  const system = vf.System();
+
+  system.addStave({
+    voices: [
+      // TODO BEAMS!
+      // e.g.
+      // score.voice(
+      //   score.notes('C#5/q, B4')
+      //     .concat(score.beam(score.notes('A4/8, E4, C4, D4')))
+      // )
+      // Group into 4 beats and beam any pairs of quavers within a beat
+      // ^^ This matches the cards. Nice and simple.
+      score.voice(score.notes(phrase)) //{stem: 'up'}
+    ]
+  }); //.addClef('treble').addTimeSignature('4/4');
+
+  vf.draw();
+};
+
+const playCard = (cardCode) => {
+  const phrase = cards[cardCode];
+
+  const conductor = new BandJS();
+  conductor.setTimeSignature(4,4);
+  conductor.setTempo(120);
+  const piano = conductor.createInstrument();
+
+  const notes = phrase.split(', ');
+  
+  notes.forEach((note) => {
+    const [pitch, duration] = note.split('/');
+    console.log(pitch, duration);
+    piano.note(toBandDuration(duration), pitch);
+  });
+
+  const player = conductor.finish();
+  player.play();
+}
+
+// Object.keys(window.compose_ys.CARDS).slice(0, 3)
+['0011','0012','0013','0014',
+ '0021','0022','0023','0024'].forEach((cardCode) => {
+  const cardsElement = document.querySelector('.cards');
+  const cardElement = document.createElement('div');
+  cardElement.setAttribute('id', cardCode)
+  cardElement.setAttribute('class', 'card');
+  const cardCodeElement = document.createElement('h3');
+  cardCodeElement.setAttribute('class', 'cardCode');
+  cardCodeElement.textContent = cardCode;
+  const playButtonElement = document.createElement('button');
+  playButtonElement.setAttribute('class', 'play-button');
+  playButtonElement.textContent = 'Play';
+  playButtonElement.onclick = () => {
+    playCard(cardCode);
+  };
+  cardsElement.appendChild(cardElement);
+  cardElement.appendChild(cardCodeElement);
+  renderCard(cardCode, cardCode);
+  cardElement.appendChild(playButtonElement);
+});
+
+</script>
